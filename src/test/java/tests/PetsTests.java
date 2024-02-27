@@ -131,6 +131,19 @@ public class PetsTests {
         });
     }
 
+    @DisplayName("Запрос ID несуществующего питомца")
+    @Test
+    public void getNonExistingPet() {
+        given(requestSpec)
+                .when()
+                .get(petPath + "/" + 0)
+                .then()
+                .spec(responseSpec)
+                .statusCode(404)
+                .body("type", is("error"))
+                .body("message", is("Pet not found"));
+    }
+
     @DisplayName("Удаление несуществующего питомца")
     @Test
     public void deleteNonExistingPet() {
@@ -205,6 +218,23 @@ public class PetsTests {
             assertEquals(updatedPet.getName(),("RexEdited"));
             assertEquals(updatedPet.getStatus(),("reserved"));
         });
+    }
+
+    @DisplayName("Обновление данных питомца по несуществующему ID")
+    @Test
+    public void updateWithPostByBadId(){
+        given(requestSpec)
+                .with()
+                .contentType(ContentType.URLENC)
+                .formParam("name", "RexEdited")
+                .formParam("status", "reserved")
+                .when()
+                .post(petPath + "/" + 0)
+                .then()
+                .spec(responseSpec)
+                .statusCode(404)
+                .body("type", is("unknown"))
+                .body("message", is("not found"));
     }
 
 }
