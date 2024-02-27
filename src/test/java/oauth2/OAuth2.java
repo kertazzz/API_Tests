@@ -1,3 +1,5 @@
+package oauth2;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Cookies;
@@ -5,14 +7,12 @@ import io.restassured.response.Response;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 
 import static io.restassured.RestAssured.given;
 
 
-public class RestAssuredOAuth2 {
+public class OAuth2 {
 
 
     public static String clientId = "test";
@@ -25,7 +25,7 @@ public class RestAssuredOAuth2 {
 
 
     public static Response authorize() {
-
+        cookies = setup();
         given().cookies(cookies)
                 .log()
                 .uri()
@@ -42,7 +42,6 @@ public class RestAssuredOAuth2 {
                 .statusCode(200)
                 .extract()
                 .response();
-
 
         return given()
                 .cookies(cookies)
@@ -62,11 +61,9 @@ public class RestAssuredOAuth2 {
                 .log()
                 .all()
                 .extract().response();
-
     }
 
-    @BeforeAll
-    public static void setup() {
+    public static Cookies setup() {
         RestAssured.baseURI = "https://petstore.swagger.io";
         Cookies initialCookies = given()
                 .log()
@@ -89,7 +86,7 @@ public class RestAssuredOAuth2 {
                 .log()
                 .headers();
 
-        cookies = given().cookies(initialCookies)
+        return given().cookies(initialCookies)
                 .log()
                 .uri()
                 .with()
@@ -102,15 +99,13 @@ public class RestAssuredOAuth2 {
                 .then()
                 .statusCode(302)
                 .extract().detailedCookies();
-
     }
 
-    @Test
-    public void getAccessToken()  {
+    public static String getAccessToken()  {
         Response response = authorize();
         String parsedToken = response.getHeader("Location").replaceFirst(".*#", "").replaceFirst("&.*", "");
         String accessToken = parsedToken.replaceFirst(".*=", "");
         Assertions.assertNotNull(accessToken);
-        RestAssured.oauth2(accessToken);
+        return accessToken;
     }
 }
