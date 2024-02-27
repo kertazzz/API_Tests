@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.11.2'
+    id "io.freefair.lombok" version "8.6"
+
+}
+
+repositories {
+    mavenCentral()
+}
+
+def allureVersion = "2.25.0",
+    assertJVersion = "3.25.3",
+    restAssuredVersion = "5.4.0",
+    jacksonVersion = "2.16.1",
+    aspectJVersion = "1.9.20.1"
+
+configurations {
+    agent {
+        canBeResolved = true
+        canBeConsumed = true
+    }
+}
+
+dependencies {
+    testImplementation "org.assertj:assertj-core:$assertJVersion"
+    testImplementation "io.qameta.allure:allure-rest-assured:$allureVersion"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
+    testImplementation "io.qameta.allure:allure-junit5:$allureVersion"
+    testImplementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    testImplementation 'commons-net:commons-net:3.10.0'
+    testRuntimeOnly "org.slf4j:slf4j-simple:2.0.5"
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+    agent "org.aspectj:aspectjweaver:$aspectJVersion"
+
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+    systemProperties(System.getProperties())
+    testLogging {
+        lifecycle {
+            events "started", "skipped", "failed", "standard_error", "standard_out"
+            exceptionFormat "short"
+        }
+    }
+}
+
+task regress(type: Test) {
+    useJUnitPlatform {
+        includeTags ("api")
+    }
+}
